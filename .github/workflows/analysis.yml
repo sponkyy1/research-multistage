@@ -1,0 +1,32 @@
+name: Grype Multi-stage Analysis
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Install Grype
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+    - name: Run Grype Comparison
+      run: |
+        chmod +x ./entrypoint.sh
+        ./entrypoint.sh
+
+    - name: Upload results as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: grype-results
+        path: results/

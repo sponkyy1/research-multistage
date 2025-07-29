@@ -1,0 +1,35 @@
+name: 🧪 Trivy Multi-stage Analysis
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧾 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🔎 Install Trivy
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.51.1_Linux-64bit.deb
+        sudo dpkg -i trivy_0.51.1_Linux-64bit.deb
+
+    - name: 🔬 Run Trivy Comparison
+      run: |
+        chmod +x ./entrypoint.sh
+        ./entrypoint.sh
+
+    - name: 📤 Upload results as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-results
+        path: results/
